@@ -2,6 +2,8 @@ package ru.sergey_gusarov.hw17.controlles.rest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import ru.sergey_gusarov.hw17.domain.books.Author;
 import ru.sergey_gusarov.hw17.domain.books.Book;
 import ru.sergey_gusarov.hw17.domain.books.BookComment;
@@ -26,33 +28,33 @@ public class BookRestController {
     }
 
     @GetMapping
-    public  List<Book> listBookPage() {
+    public Flux<Book> listBookPage() {
         List<Book> books = bookService.findAll();
-        return books;
+        return Flux.fromStream(books.stream());
     }
 
     @PostMapping
-    public List<Book> addBook(@RequestBody Book book) {
+    public Flux<Book> addBook(@RequestBody Book book) {
         bookService.save(book);
-        return bookService.findAll();
+        return Flux.fromStream(bookService.findAll().stream());
     }
 
     @DeleteMapping("/{id}")
-    public List<Book> deleteBook(@PathVariable String id) {
+    public Flux<Book> deleteBook(@PathVariable String id) {
         bookService.deleteById(id);
-        return bookService.findAll();
+        return Flux.fromStream(bookService.findAll().stream());
     }
 
     @PutMapping
-    public Book editBook( @RequestBody Book book) {
+    public Mono<Book> editBook(@RequestBody Book book) {
         Book bookFromDb = bookService.getById(book.getId()).orElseThrow(NotFoundException::new);
         bookFromDb.setTitle(book.getTitle());
         bookService.save(bookFromDb);
-        return bookService.getById(bookFromDb.getId()).orElseThrow(NotFoundException::new);
+        return Mono.just(bookService.getById(bookFromDb.getId()).orElseThrow(NotFoundException::new));
     }
 
     @DeleteMapping("/deleteGenreFromBook/{bookId}")
-    public List<Genre> deleteGenre(@PathVariable String bookId, @RequestBody HashMap requestBody) {
+    public Flux<Genre> deleteGenre(@PathVariable String bookId, @RequestBody HashMap requestBody) {
         Book bookFromDb = bookService.findById(bookId).orElseThrow(NotFoundException::new);
         Genre genreForDel = bookFromDb.getGenres().stream()
                 .filter(p -> p.getName().equals(requestBody.get("genreName")))
@@ -60,11 +62,11 @@ public class BookRestController {
         bookFromDb.getGenres().remove(genreForDel);
         bookService.save(bookFromDb);
         Book bookFromUpdateDb = bookService.findById(bookId).orElseThrow(NotFoundException::new);
-        return bookFromUpdateDb.getGenres();
+        return Flux.fromStream(bookFromUpdateDb.getGenres().stream());
     }
 
     @DeleteMapping("/deleteCommentFromBook/{bookId}")
-    public List<BookComment> deleteComment(@PathVariable String bookId, @RequestBody HashMap requestBody) {
+    public Flux<BookComment> deleteComment(@PathVariable String bookId, @RequestBody HashMap requestBody) {
         Book bookFromDb = bookService.findById(bookId).orElseThrow(NotFoundException::new);
         BookComment commentForDel = bookFromDb.getBookComments().stream()
                 .filter(p -> p.getText().equals(requestBody.get("commentText")))
@@ -72,11 +74,11 @@ public class BookRestController {
         bookFromDb.getBookComments().remove(commentForDel);
         bookService.save(bookFromDb);
         Book bookFromUpdateDb = bookService.findById(bookId).orElseThrow(NotFoundException::new);
-        return bookFromUpdateDb.getBookComments();
+        return Flux.fromStream(bookFromUpdateDb.getBookComments().stream());
     }
 
     @DeleteMapping("/deleteAuthorFromBook/{bookId}")
-    public List<Author> deleteAuthor(@PathVariable String bookId, @RequestBody HashMap requestBody) {
+    public Flux<Author> deleteAuthor(@PathVariable String bookId, @RequestBody HashMap requestBody) {
         Book bookFromDb = bookService.findById(bookId).orElseThrow(NotFoundException::new);
         Author authorForDel = bookFromDb.getAuthors().stream()
                 .filter(p -> p.getId().equals(requestBody.get("authorId")))
@@ -84,46 +86,46 @@ public class BookRestController {
         bookFromDb.getAuthors().remove(authorForDel);
         bookService.save(bookFromDb);
         Book bookFromUpdateDb = bookService.findById(bookId).orElseThrow(NotFoundException::new);
-        return bookFromUpdateDb.getAuthors();
+        return Flux.fromStream(bookFromUpdateDb.getAuthors().stream());
     }
 
 
     @PostMapping("/addGenreToBook/{bookId}")
-    public List<Genre> addGenreToBook(@PathVariable String bookId, @RequestBody HashMap requestBody) {
+    public Flux<Genre> addGenreToBook(@PathVariable String bookId, @RequestBody HashMap requestBody) {
         Book bookFromDb = bookService.findById(bookId).orElseThrow(NotFoundException::new);
         Genre genre = new Genre();
         genre.setName(requestBody.get("name").toString());
         bookFromDb.getGenres().add(genre);
         bookService.save(bookFromDb);
         Book bookFromUpdateDb = bookService.findById(bookId).orElseThrow(NotFoundException::new);
-        return bookFromUpdateDb.getGenres();
+        return Flux.fromStream(bookFromUpdateDb.getGenres().stream());
     }
 
     @PostMapping("/addCommentToBook/{bookId}")
-    public List<BookComment> addCommentToBook(@PathVariable String bookId, @RequestBody HashMap requestBody) {
+    public Flux<BookComment> addCommentToBook(@PathVariable String bookId, @RequestBody HashMap requestBody) {
         Book bookFromDb = bookService.findById(bookId).orElseThrow(NotFoundException::new);
         BookComment bookComment = new BookComment();
         bookComment.setText(requestBody.get("text").toString());
         bookFromDb.getBookComments().add(bookComment);
         bookService.save(bookFromDb);
         Book bookFromUpdateDb = bookService.findById(bookId).orElseThrow(NotFoundException::new);
-        return bookFromUpdateDb.getBookComments();
+        return Flux.fromStream(bookFromUpdateDb.getBookComments().stream());
     }
 
     @PostMapping("/addAuthorToBook/{bookId}")
-    public List<Author> addAuthorToBook(@PathVariable String bookId, @RequestBody HashMap requestBody) {
+    public Flux<Author> addAuthorToBook(@PathVariable String bookId, @RequestBody HashMap requestBody) {
         Book bookFromDb = bookService.findById(bookId).orElseThrow(NotFoundException::new);
         Author author = authorService.getById(requestBody.get("id").toString()).orElseThrow(NotFoundException::new);
         bookFromDb.getAuthors().add(author);
         bookService.save(bookFromDb);
         Book bookFromUpdateDb = bookService.findById(bookId).orElseThrow(NotFoundException::new);
-        return bookFromUpdateDb.getAuthors();
+        return Flux.fromStream(bookFromUpdateDb.getAuthors().stream());
     }
 
     @GetMapping("/getAuthorsFromBook/{bookId}")
-    public  List<Author> listAuthorBook(@PathVariable String bookId) {
+    public  Flux<Author> listAuthorBook(@PathVariable String bookId) {
         List<Author> authors = bookService.findById(bookId).orElseThrow(NotFoundException::new).getAuthors();
-        return authors;
+        return Flux.fromStream(authors.stream());
     }
 
 }
