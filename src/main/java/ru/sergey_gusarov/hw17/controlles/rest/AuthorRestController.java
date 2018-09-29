@@ -11,7 +11,7 @@ import ru.sergey_gusarov.hw17.service.books.AuthorService;
 import java.util.List;
 
 @RestController
-@RequestMapping("/author")
+@RequestMapping("/author_old")
 public class AuthorRestController {
     private final AuthorService authorService;
 
