@@ -1,32 +1,32 @@
 package ru.sergey_gusarov.hw17.service.books;
 
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import ru.sergey_gusarov.hw17.domain.books.Author;
 import ru.sergey_gusarov.hw17.domain.books.Book;
 import ru.sergey_gusarov.hw17.domain.books.Genre;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface BookService {
-    long count();
+    Mono<Long> count();
 
-    Optional<Book> getById(String id);
+    Mono<Book> getById(String id);
 
-    Optional<Book> findById(String id);
+    Mono<Book> findById(String id);
 
-    List<Book> findByTitle(String title);
+    Flux<Book> findByTitle(String title);
 
-    void deleteById(String id);
+    Mono<Void> deleteById(String id);
 
-    Book save(Book book);
+    Mono<Book> save(Book book);
 
-    Book add(String title, List<Author> authors, List<Genre> genres);
+    Mono<Book> add(String title, List<Author> authors, List<Genre> genres);
 
-    List<Book> findAll();
+    Flux<Book> findAll();
 
-    void deleteAll();
+    Mono<Void> deleteAll();
 
-    void addComment(String id, String comment);
+    Mono<Void> addComment(String id, String comment);
 
-    List<Book> findByAuthorName(String authorName);
 }

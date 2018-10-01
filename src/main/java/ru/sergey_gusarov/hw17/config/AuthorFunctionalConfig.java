@@ -26,7 +26,7 @@ public class AuthorFunctionalConfig {
     @Bean
     RouterFunction<ServerResponse> getAllEmployeesRoute() {
         return route(GET("/author"),
-                req -> ok().body(Flux.fromStream(authorService.findAll().stream()), Author.class));
+                req -> ok().body(authorService.findAll(), Author.class));
     }
 
     @Bean
@@ -41,8 +41,7 @@ public class AuthorFunctionalConfig {
     RouterFunction<ServerResponse> composedRoutesInNest() {
         return route(DELETE("/author/{id}"),
                 req -> ok().body(
-                        Flux.fromStream(
-                                authorService.deleteByIdAndRetList(req.pathVariable("id")).stream()),
+                                authorService.deleteByIdAndRetList(req.pathVariable("id")),
                         Author.class));
     }
 

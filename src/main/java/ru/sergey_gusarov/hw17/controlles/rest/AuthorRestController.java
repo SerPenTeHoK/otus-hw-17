@@ -22,33 +22,29 @@ public class AuthorRestController {
 
     @GetMapping
     public Flux<Author> listAuthorPage() {
-        List<Author> authors = authorService.findAll();
-        return Flux.fromStream(authors.stream());
+        return authorService.findAll();
     }
 
     @GetMapping("/{id}")
     public Mono<Author> getAuthor(@PathVariable String id) {
-        Author author = authorService.getById(id).orElseThrow(NotFoundException::new);
-        return Mono.just(author);
+        return authorService.getById(id);
     }
 
     @PostMapping
     public Flux<Author> addAuthor(@RequestBody Author author) {
         authorService.save(author);
-        return Flux.fromStream(authorService.findAll().stream());
+        return authorService.findAll();
     }
 
     @DeleteMapping("/{id}")
     public Flux<Author> deleteAuthor(@PathVariable String id) {
         authorService.deleteById(id);
-        return Flux.fromStream(authorService.findAll().stream());
+        return authorService.findAll();
     }
 
     @PutMapping
     public Mono<Author> editAuthor(@RequestBody Author author) {
-        Author authorFromDb = authorService.getById(author.getId()).orElseThrow(NotFoundException::new);
-        authorFromDb.setName(author.getName());
-        authorService.save(authorFromDb);
-        return Mono.just(authorService.getById(authorFromDb.getId()).orElseThrow(NotFoundException::new));
+        Mono<Author> authorFromDb = authorService.getById(author.getId());
+        return authorService.getById(author.getId());
     }
 }
