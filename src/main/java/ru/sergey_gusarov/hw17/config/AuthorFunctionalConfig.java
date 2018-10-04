@@ -3,6 +3,7 @@ package ru.sergey_gusarov.hw17.config;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.mongodb.repository.config.EnableReactiveMongoRepositories;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import ru.sergey_gusarov.hw17.domain.books.Author;
@@ -14,6 +15,7 @@ import static org.springframework.web.reactive.function.server.RouterFunctions.r
 import static org.springframework.web.reactive.function.server.ServerResponse.ok;
 
 @Configuration
+@EnableReactiveMongoRepositories("ru.sergey_gusarov.hw17.repository")
 public class AuthorFunctionalConfig {
     private final AuthorService authorService;
 
