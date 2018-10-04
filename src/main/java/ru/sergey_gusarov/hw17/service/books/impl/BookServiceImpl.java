@@ -1,6 +1,8 @@
 package ru.sergey_gusarov.hw17.service.books.impl;
 
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import ru.sergey_gusarov.hw17.domain.books.Author;
 import ru.sergey_gusarov.hw17.domain.books.Book;
 import ru.sergey_gusarov.hw17.domain.books.BookComment;
@@ -11,7 +13,6 @@ import ru.sergey_gusarov.hw17.repository.book.BookRepository;
 import ru.sergey_gusarov.hw17.service.books.BookService;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class BookServiceImpl implements BookService {
@@ -24,43 +25,44 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public long count() {
+    public Mono<Long> count() {
         return bookRepository.count();
     }
 
     @Override
-    public Optional<Book> getById(String id) {
+    public Mono<Book> getById(String id) {
         return bookRepository.findById(id);
     }
 
     @Override
-    public Optional<Book> findById(String id) {
+    public Mono<Book> findById(String id) {
         return bookRepository.findById(id);
     }
 
     @Override
-    public List<Book> findByTitle(String title) {
+    public Flux<Book> findByTitle(String title) {
         return bookRepository.findByTitle(title);
     }
 
     @Override
-    public void deleteById(String id) {
+    public Mono<Void> deleteById(String id) {
         bookRepository.deleteById(id);
+        return Mono.empty();
     }
 
     @Override
-    public Book save(Book book) {
+    public Mono<Book> save(Book book) {
         return bookRepository.save(book);
     }
 
     @Override
-    public Book add(String title, List<Author> authors, List<Genre> genres) {
+    public Mono<Book> add(String title, List<Author> authors, List<Genre> genres) {
         Book book = new Book();
         book.setTitle(title);
         authors.forEach(author -> {
-            List<Author> authorList = authorRepository.findByName(author.getName());
-            if (authorList.size() > 0)
-                author.setId(authorList.get(0).getId());
+            Flux<Author> authorList = authorRepository.findByName(author.getName());
+            if (authorList.count().block() > 0)
+                author.setId(authorList.blockFirst().getId());
             else
                 authorRepository.save(author);
         });
@@ -70,28 +72,30 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public List<Book> findAll() {
+    public Flux<Book> findAll() {
         return bookRepository.findAll();
     }
 
     @Override
-    public void deleteAll() {
+    public Mono<Void> deleteAll() {
         bookRepository.deleteAll();
+        return Mono.empty();
     }
 
     @Override
-    public void addComment(String id, String comment) {
-        Book book = bookRepository.findById(id).get();
+    public Mono<Void> addComment(String id, String comment) {
+        Book book = bookRepository.findById(id).block();
         book.getBookComments().add(new BookComment(comment));
         bookRepository.save(book);
+        return Mono.empty();
     }
 
     @Override
-    public List<Book> findByAuthorName(String authorName) {
-        List<Author> authors = authorRepository.findByName(authorName);
-        if(authors.isEmpty())
+    public Flux<Book> findByAuthorName(String authorName) {
+        Iterable<Author> authors = authorRepository.findByName(authorName).toIterable();
+        if (!authors.iterator().hasNext())
             throw new NotFoundException();
-        Author author = authors.get(0);
+        Author author = authors.iterator().next();
         return bookRepository.findByAuthorId(author.getId());
     }
 

@@ -5,7 +5,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerResponse;
-import reactor.core.publisher.Flux;
 import ru.sergey_gusarov.hw17.domain.books.Author;
 import ru.sergey_gusarov.hw17.service.books.AuthorService;
 
@@ -24,13 +23,13 @@ public class AuthorFunctionalConfig {
     }
 
     @Bean
-    RouterFunction<ServerResponse> getAllEmployeesRoute() {
+    RouterFunction<ServerResponse> getAllAuthorRoute() {
         return route(GET("/author"),
-                req -> ok().body(Flux.fromStream(authorService.findAll().stream()), Author.class));
+                req -> ok().body(authorService.findAll(), Author.class));
     }
 
     @Bean
-    RouterFunction<ServerResponse> updateEmployeeRoute() {
+    RouterFunction<ServerResponse> updateAuthorRoute() {
         return route(PUT("/author/"),
                 req -> req.body(toMono(Author.class))
                         .doOnNext(authorService::save)
@@ -38,11 +37,10 @@ public class AuthorFunctionalConfig {
     }
 
     @Bean
-    RouterFunction<ServerResponse> composedRoutesInNest() {
+    RouterFunction<ServerResponse> deleteAuthor() {
         return route(DELETE("/author/{id}"),
                 req -> ok().body(
-                        Flux.fromStream(
-                                authorService.deleteByIdAndRetList(req.pathVariable("id")).stream()),
+                        authorService.deleteByIdAndRetList(req.pathVariable("id")),
                         Author.class));
     }
 

@@ -4,6 +4,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 import org.springframework.web.reactive.function.server.HandlerFunction;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerResponse;
@@ -15,6 +16,7 @@ import static org.springframework.web.reactive.function.server.RouterFunctions.r
 
 
 @SpringBootApplication
+@EnableMongoRepositories("ru.sergey_gusarov.hw17.repository.author")
 public class Main {
     public static void main(String[] args) {
         SpringApplication.run(Main.class);

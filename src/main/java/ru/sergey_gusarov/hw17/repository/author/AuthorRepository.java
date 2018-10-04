@@ -1,12 +1,11 @@
 package ru.sergey_gusarov.hw17.repository.author;
 
-import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import org.springframework.stereotype.Repository;
+import reactor.core.publisher.Flux;
 import ru.sergey_gusarov.hw17.domain.books.Author;
 
-import java.util.List;
-
 @Repository
-public interface AuthorRepository extends MongoRepository<Author, String>, AuthorRepositoryCustom {
-    List<Author> findByName(String name);
+public interface AuthorRepository extends ReactiveCrudRepository<Author, String>{
+    Flux<Author> findByName(String name);
 }

@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import reactor.core.publisher.Mono;
 import ru.sergey_gusarov.hw17.domain.books.Author;
 import ru.sergey_gusarov.hw17.repository.author.AuthorRepository;
 
@@ -36,7 +37,7 @@ class AuthorRepositoryTest {
     @Test
     @DisplayName("Save")
     void save() {
-        List<Author> authorsFromDb = authorRepository.findByName(AUTHOR_NAME);
+        List<Author> authorsFromDb = authorRepository.findByName(AUTHOR_NAME).collectList().block();
         assertEquals(1L, authorsFromDb.size());
         assertEquals(AUTHOR_NAME, authorsFromDb.get(0).getName(), "Name not eq");
     }
@@ -44,34 +45,18 @@ class AuthorRepositoryTest {
     @Test
     @DisplayName("Find by id")
     void findById() {
-        List<Author> authorsFromDb = authorRepository.findByName(AUTHOR_NAME);
+        List<Author> authorsFromDb = authorRepository.findByName(AUTHOR_NAME).collectList().block();
         assertEquals(1L, authorsFromDb.size(), "Size not eq 1");
-        Optional<Author> optionalAuthorFromDbById = authorRepository.findById(authorsFromDb.get(0).getId());
-        assertEquals(AUTHOR_NAME, optionalAuthorFromDbById.get().getName(), "Author.Name is not stored");
+        Mono<Author> optionalAuthorFromDbById = authorRepository.findById(authorsFromDb.get(0).getId());
+        assertEquals(AUTHOR_NAME, optionalAuthorFromDbById.block().getName(), "Author.Name is not stored");
     }
 
     @Test
     @DisplayName("Find by name")
     void findByName() {
-        List<Author> authorsFromDb = authorRepository.findByName(AUTHOR_NAME);
+        List<Author> authorsFromDb = authorRepository.findByName(AUTHOR_NAME).collectList().block();
         assertEquals(1L, authorsFromDb.size());
         assertEquals(AUTHOR_NAME, authorsFromDb.get(0).getName(), "Name not eq");
     }
 
-    // Тесты для методов, которые для тренировки
-    @Test
-    @DisplayName("Find by ?num?")
-    void getAuthorByNumMethod() {
-        List<Author> authorsFromDb = authorRepository.getAuthorByNumMethod(AUTHOR_NAME);
-        assertEquals(1L, authorsFromDb.size());
-        assertEquals(AUTHOR_NAME, authorsFromDb.get(0).getName(), "Name not eq");
-    }
-
-    @Test
-    @DisplayName("Find by ?num1?")
-    void getAuthorByNum1Method() {
-        Author authorFromDb = authorRepository.getAuthorByNum1Method(AUTHOR_NAME);
-        assertNotNull(authorFromDb, "Doesn't find");
-        assertEquals(AUTHOR_NAME, authorFromDb.getName(), "Name not eq");
-    }
 }

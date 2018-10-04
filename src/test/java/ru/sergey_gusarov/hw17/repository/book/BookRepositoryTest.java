@@ -9,6 +9,7 @@ import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import reactor.core.publisher.Mono;
 import ru.sergey_gusarov.hw17.domain.books.Author;
 import ru.sergey_gusarov.hw17.domain.books.Book;
 import ru.sergey_gusarov.hw17.domain.books.Genre;
@@ -57,7 +58,7 @@ class BookRepositoryTest {
     void count() {
         bookRepository.save(new Book("Title1"));
         bookRepository.save(new Book("Title2"));
-        long count = bookRepository.count();
+        long count = bookRepository.count().block();
         assertEquals(3L, count);
     }
 
@@ -65,7 +66,7 @@ class BookRepositoryTest {
     @DisplayName("Save")
     void save() {
         Book bookCreated = dummyBook3Genre1AuthorName3(false);
-        List<Book> booksFromDb = bookRepository.findByTitle(bookCreated.getTitle());
+        List<Book> booksFromDb = bookRepository.findByTitle(bookCreated.getTitle()).collectList().block();
         Book fromDb = booksFromDb.get(0);
         assertEquals(bookCreated.getAuthors().get(0).getName(),
                 fromDb.getAuthors().get(0).getName(), "Authors doesn't match");
@@ -77,10 +78,10 @@ class BookRepositoryTest {
     @DisplayName("Get by id")
     void getById() {
         Book bookCreated = dummyBook3Genre1AuthorName3(false);
-        List<Book> booksFromDbByTitle = bookRepository.findByTitle(bookCreated.getTitle());
+        List<Book> booksFromDbByTitle = bookRepository.findByTitle(bookCreated.getTitle()).collectList().block();
         Book fromDbByTitle = booksFromDbByTitle.get(0);
-        Optional<Book> optionalBookFromDb = bookRepository.findById(fromDbByTitle.getId());
-        Book fromDb = optionalBookFromDb.get();
+        Mono<Book> optionalBookFromDb = bookRepository.findById(fromDbByTitle.getId());
+        Book fromDb = optionalBookFromDb.block();
         assertEquals(bookCreated.getAuthors().get(0).getName(),
                 fromDb.getAuthors().get(0).getName(), "Authors doesn't match");
         assertEquals(bookCreated.getGenres().get(0).getName(),
@@ -91,38 +92,38 @@ class BookRepositoryTest {
     @DisplayName("Delete by id")
     void deleteById() {
         Book bookCreated = dummyBook3Genre1AuthorName3(false);
-        List<Book> booksFromDbByTitle = bookRepository.findByTitle(bookCreated.getTitle());
+        List<Book> booksFromDbByTitle = bookRepository.findByTitle(bookCreated.getTitle()).collectList().block();
         Book fromDbByTitle = booksFromDbByTitle.get(0);
-        Optional<Book> optionalBookFromDb = bookRepository.findById(fromDbByTitle.getId());
-        Book fromDb = optionalBookFromDb.get();
+        Mono<Book> optionalBookFromDb = bookRepository.findById(fromDbByTitle.getId());
+        Book fromDb = optionalBookFromDb.block();
         bookRepository.deleteById(fromDb.getId());
-        long count = bookRepository.count();
+        long count = bookRepository.count().block();
         assertEquals(0L, count);
     }
 
     @Test
     @DisplayName("Find by author id")
     void findByAuthor() {
-        List<Author> authors = authorRepository.findByName("Author3");
+        List<Author> authors = authorRepository.findByName("Author3").collectList().block();
         Author author = authors.get(0);
-        List<Book> books = bookRepository.findByAuthorId(author.getId());
+        List<Book> books = bookRepository.findByAuthorId(author.getId()).collectList().block();
         assertEquals(1L, books.size());
     }
 
     @Test
     @DisplayName("Find by author id, if them 2 in book")
     void findByAuthorIf2InBook() {
-        List<Author> authors = authorRepository.findByName("Author3");
+        List<Author> authors = authorRepository.findByName("Author3").collectList().block();
         Author author = authors.get(0);
-        List<Book> books = bookRepository.findByAuthorId(author.getId());
+        List<Book> books = bookRepository.findByAuthorId(author.getId()).collectList().block();
         assertEquals(1L, books.size());
         Book book = books.get(0);
         Author secondAuthor = new Author("AuthorSecond");
         mongoOperations.save(secondAuthor);
-        Author authorFromDb = authorRepository.findByName(secondAuthor.getName()).get(0);
+        Author authorFromDb = authorRepository.findByName(secondAuthor.getName()).blockFirst();
         book.getAuthors().add(authorFromDb);
         mongoOperations.save(book);
-        books = bookRepository.findByAuthorId(author.getId());
+        books = bookRepository.findByAuthorId(author.getId()).collectList().block();
         assertEquals(1L, books.size());
     }
 
